@@ -9,6 +9,7 @@ class calcnode(object):
 	def __init__(self, fwrapper):
 		self.function = fwrapper.function
 		self.childnumber = fwrapper.varnumber
+		self.children = []
 
 	def evaluate(self, varlist):
 		results = [c.evaluate(varlist) for c in self.children]
@@ -31,7 +32,22 @@ class paramnode(object):
 def add(val):
 	return sum(val)
 
+def sub(val):
+	return val[0] - val[1]
+
+def mul(val):
+	return val[0] * val[1]
+
+# if val[1] == 0 ?
+def div(val):
+	return val[0] / val[1]
+
 fadd = fwrapper(add, 2)
+fsub = fwrapper(sub, 2)
+fmul = fwrapper(mul, 2)
+fdiv = fwrapper(div, 2)
+
+fwrappers = [fadd, fsub, fmul, fdiv]
 
 newnode = calcnode(fadd)
 child1 = numnode(8)
@@ -40,8 +56,21 @@ newnode.children = [child1, child2]
 varlist = [333]
 print(newnode.evaluate(varlist))
 
-def makerandomnode():
-	top = 1
-	if random() < 0.7 and top == 1:
+def makerandomtree(varnumber, depth=4):
+	if (random() < 0.7):
+		if (depth <= 1):
+			if random() > 0.5:
+				return numnode(randint(1, 10))
+			else:
+				return paramnode(randint(0, varnumber - 1))
 		tree = calcnode(choice(fwrappers))
-	pass
+		depth -= 1
+		tree.children = [makerandomtree(varnumber, depth) for i in range(tree.childnumber)]
+		return tree
+	elif (random() > 0.9):
+		return numnode(randint(1, 10))
+	else:
+		return paramnode(randint(0, varnumber - 1))
+
+a = makerandomtree(3)
+print a.evaluate([2, 3, 4])
