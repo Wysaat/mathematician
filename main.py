@@ -1,4 +1,5 @@
 from random import random, randint, choice
+from copy import deepcopy
 
 class fwrapper(object):
     def __init__(self, function, funcname, varnumber):
@@ -14,14 +15,9 @@ class calcnode(object):
         self.children = []
 
     def evaluate(self, varlist):
-        try:
-            varlist = [float(var) for var in varlist]
-            results = [c.evaluate(varlist) for c in self.children]
-            return self.function(results)
-        except ZeroDivisionError:
-            print "ZeroDivisionError\n"
-            varlist = [randint(1, 100) for i in range(len(varlist))]
-            return self.evaluate(varlist)
+        varlist = [float(var) for var in varlist]
+        results = [c.evaluate(varlist) for c in self.children]
+        return self.function(results)
 
     def draw(self, indent=0):
         print(indent * " " + self.name)
@@ -94,12 +90,53 @@ def makerandomtree(varnumber, depth=4):
         return paramnode(randint(0, varnumber - 1))
 
 # test function: f(x, y, z) = 5*x**3 - 7*y**2 + 6*z + 8
-def testfunction(x, y, z):
-    return 5*x**3 - 7*y**2 + 6*z + 8
+def testfunction(varlist):
+    return 5*varlist[0]**3 - 7*varlist[1]**2 + 6*varlist[2] + 8
 
-def maketestdata(varnumber, size=20):
-    
+def maketestdata(testfunction, varnumber, size=20):
+    data = []
+    while True:
+        if size == 0:
+            return data
+        varlist = [randint(1, 100) for i in range(varnumber)]
+        result = testfunction(varlist)
+        dataitem = varlist + [result]
+        if dataitem not in data:
+            data.append(dataitem)
+            size -= 1
 
-a = makerandomtree(3)
-print a.evaluate([2, 3, 4])
+def scoretree(tree, data):
+    total = 0
+    datasize = len(data)
+    for dataitem in data:
+        try:
+            total += (tree.evaluate(dataitem[:-1]) - dataitem[-1]) ** 2
+        except ZeroDivisionError:
+            datasize -= 1
+    return total / datasize
+
+def exchange(tree1, tree2):
+    tree = deepcopy(tree1)
+    if (random() > 0.8):
+        tree.children[randint(0, tree.childnumber - 1)] = tree2
+    else:
+        alters = [c for c in tree.children if isinstance(c, calcnode)]
+        alter = choice(alters)
+        alter = exchange(alter, tree2)
+    return tree
+
+a = makerandomtree(3, 10)
 a.draw()
+
+data = maketestdata(testfunction, 3)
+for dataitem in data:
+    print(dataitem)
+
+score = scoretree(a, data)
+print score
+
+b = makerandomtree(3, 10)
+c = exchange(a, b)
+a.draw()
+b.draw()
+c.draw()
