@@ -73,8 +73,14 @@ newnode.children = [child1, child2]
 varlist = [333]
 print(newnode.evaluate(varlist))
 
-def makerandomtree(varnumber, depth=4):
-    if (random() < 0.7):
+def makerandomtree(varnumber, depth=4, top=1):
+    randnum = random()
+    if top == 1:
+        tree = calcnode(choice(fwrappers))
+        top = 0
+        tree.children = [makerandomtree(varnumber, depth, top) for i in range(tree.childnumber)]
+        return tree
+    elif randnum < 0.7:
         if (depth <= 1):
             if random() > 0.5:
                 return numnode(randint(1, 10))
@@ -82,9 +88,9 @@ def makerandomtree(varnumber, depth=4):
                 return paramnode(randint(0, varnumber - 1))
         tree = calcnode(choice(fwrappers))
         depth -= 1
-        tree.children = [makerandomtree(varnumber, depth) for i in range(tree.childnumber)]
+        tree.children = [makerandomtree(varnumber, depth, top) for i in range(tree.childnumber)]
         return tree
-    elif (random() > 0.9):
+    elif randnum > 0.9:
         return numnode(randint(1, 10))
     else:
         return paramnode(randint(0, varnumber - 1))
@@ -121,12 +127,31 @@ def exchange(tree1, tree2):
         tree.children[randint(0, tree.childnumber - 1)] = tree2
     else:
         alters = [c for c in tree.children if isinstance(c, calcnode)]
-        alter = choice(alters)
-        alter = exchange(alter, tree2)
+        if alters == []:
+            tree.children[randint(0, tree.childnumber - 1)] = tree2
+        else:
+            alter = choice(alters)
+            alternum = tree.children.index(alter)
+            tree.children[alternum] = exchange(tree.children[alternum], tree2)
     return tree
 
-a = makerandomtree(3, 10)
-a.draw()
+def change(tree, varnum, depth):
+    randnum = random()
+    if isinstance(tree, calcnode) and random < 0.9:
+        change(choice(tree.children), varnum, depth)
+    else:
+        tree = makerandomtree(varnum, depth)
+
+#def change(tree, varnum, depth):
+#    randnum = random()
+#    if isinstance(tree, calcnode) and randnum < 0.9:
+#        chosennum = choice(range(tree.childnumber))
+#        tree.children[chosennum] = change(tree.children[chosennum], varnum, depth)
+#    else:
+#        tree = makerandomtree(varnum, depth)
+#    return tree
+
+a = makerandomtree(3, 4)
 
 data = maketestdata(testfunction, 3)
 for dataitem in data:
@@ -135,8 +160,19 @@ for dataitem in data:
 score = scoretree(a, data)
 print score
 
-b = makerandomtree(3, 10)
+b = makerandomtree(3, 4)
 c = exchange(a, b)
-a.draw()
-b.draw()
-c.draw()
+
+for tree in [a, b, c]:
+    print("---------------------------------------------------------")
+    tree.draw()
+    print("---------------------------------------------------------")
+    print
+
+print("--------------------------------------------------------------------")
+
+tom = makerandomtree(3, 2)
+tom.draw()
+change(tom, 3, 2)
+print("------------------------------------------------")
+tom.draw()
