@@ -118,7 +118,7 @@ def scoretree(tree, data):
         try:
             total += (tree.evaluate(dataitem[:-1]) - dataitem[-1]) ** 2
         except ZeroDivisionError:
-            datasize -= 1
+            return -1
     return total / datasize
 
 def exchange(tree1, tree2):
@@ -142,37 +142,62 @@ def change(tree, varnum, depth):
     else:
         tree = makerandomtree(varnum, depth)
 
-#def change(tree, varnum, depth):
-#    randnum = random()
-#    if isinstance(tree, calcnode) and randnum < 0.9:
-#        chosennum = choice(range(tree.childnumber))
-#        tree.children[chosennum] = change(tree.children[chosennum], varnum, depth)
-#    else:
-#        tree = makerandomtree(varnum, depth)
-#    return tree
+def change(tree, varnum, depth):
+    randnum = random()
+    if isinstance(tree, calcnode) and randnum < 0.9:
+        chosennum = choice(range(tree.childnumber))
+        tree.children[chosennum] = change(tree.children[chosennum], varnum, depth)
+    else:
+        tree = makerandomtree(varnum, depth)
+    return tree
 
-a = makerandomtree(3, 4)
+# a = makerandomtree(3, 4)
 
 data = maketestdata(testfunction, 3)
 for dataitem in data:
     print(dataitem)
 
-score = scoretree(a, data)
-print score
+# score = scoretree(a, data)
+# print score
 
-b = makerandomtree(3, 4)
-c = exchange(a, b)
+# b = makerandomtree(3, 4)
+# c = exchange(a, b)
 
-for tree in [a, b, c]:
-    print("---------------------------------------------------------")
-    tree.draw()
-    print("---------------------------------------------------------")
-    print
+# for tree in [a, b, c]:
+#     print("---------------------------------------------------------")
+#     tree.draw()
+#     print scoretree(tree, data)
+#     print("---------------------------------------------------------")
+#     print
 
-print("--------------------------------------------------------------------")
+# print("--------------------------------------------------------------------")
 
-tom = makerandomtree(3, 2)
-tom.draw()
-change(tom, 3, 2)
-print("------------------------------------------------")
-tom.draw()
+# tom = makerandomtree(3, 2)
+# tom.draw()
+# print scoretree(tom, data)
+# change(tom, 3, 2)
+# print("------------------------------------------------")
+# tom.draw()
+# print scoretree(tom, data)
+
+trees = [makerandomtree(3, 4) for i in range(50)]
+
+trees = sorted(trees, key = lambda x : scoretree(x, data))
+trees = [tree for tree in trees if scoretree(tree, data) > 0]
+for tree in trees[:2]:
+    print scoretree(tree, data)
+
+print "---------------------------------------------------------------------"
+for i in range(20):
+    champ = trees[0]
+    trees = [exchange(champ, tree) for tree in trees]
+    trees = sorted(trees, key = lambda x : scoretree(x, data))
+    trees = [tree for tree in trees if scoretree(tree, data) > 0]
+    for tree in trees[:2]:
+        print scoretree(tree, data)
+    print "---------------------------------------------------------------------"
+    
+
+def evolve():
+    trees = [makerandomtree(3, 4) for i in range(50)]
+    pass
